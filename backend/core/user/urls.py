@@ -16,4 +16,4 @@ urlpatterns = [
     path('registration/', RegistrationAPIView.as_view())
 ]
 
-# urlpatterns += router.urls
+# urlpatterns += router.urls.py
