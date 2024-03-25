@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from djoser.conf import settings
+from django.conf import settings
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
@@ -26,7 +26,6 @@ class UpgradeUserViewSet(viewsets.ModelViewSet):
         method PUT
         Отвечает за предоставление нераспределенному пользователю роли Moderator
         """
-        # settings.MODERATOR -> rase Exception. Dont see this attribute
         return upgrade_undefined_user_role(pk, settings.MODERATOR)
 
     @action(detail=True, methods=['put'], permission_classes=[IsAdminUser])
@@ -36,5 +35,4 @@ class UpgradeUserViewSet(viewsets.ModelViewSet):
         method PUT
         Отвечает за предоставление нераспределенному пользователю роли Methodist
         """
-        # settings.METHODIST -> rase Exception. Dont see this attribute
         return upgrade_undefined_user_role(pk, settings.METHODIST)

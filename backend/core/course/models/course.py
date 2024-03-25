@@ -2,6 +2,8 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from common.models.mixins import TitleDescMixin, TimestampMixin
+from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 
 User = get_user_model()
@@ -11,20 +13,28 @@ class Course(TitleDescMixin, TimestampMixin, models.Model):
     """
         Модель описывающая курс
     """
-    image = models.ImageField(verbose_name='Изображение')
+    image = models.ImageField(verbose_name='Изображение', blank=True, null=True)
     start_date = models.DateField(verbose_name='Дата старта', null=True)
-    start_time = models.TimeField(verbose_name='Время старта')
     cost = models.DecimalField(max_digits=6, decimal_places=2, verbose_name='Стоимость')
 
     moderator = models.ForeignKey(to=User, on_delete=models.CASCADE,
                                   limit_choices_to={'role': settings.MODERATOR}, related_name='moderator')
     methodist = models.ForeignKey(to=User, on_delete=models.CASCADE,
                                   limit_choices_to={'role': settings.METHODIST}, related_name='methodist')
+    is_published = models.BooleanField(verbose_name='Опубликован?', default=False)
 
     class Meta:
         verbose_name = 'Курс'
         verbose_name_plural = 'Курсы'
 
+    def clean(self):
+        """
+        Метод валидации нового курса.
+        Если указана прошедшая или текущая дата старта, то raise ValidationError.
+        """
+        super().clean()
+        if self.start_date <= timezone.localdate():
+            raise ValidationError('Дата начала должна быть позже текущей даты!')
 
 # class Lesson(BaseFieldsMixin, models.Model):
 #     """

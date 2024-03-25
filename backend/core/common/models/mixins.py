@@ -6,8 +6,8 @@ class TitleDescMixin(models.Model):
     """
         Mixin содержащий поля название и описание
     """
-    title = models.CharField(verbose_name='Название', max_length=255)
-    description = models.TextField(verbose_name='Описание')
+    title = models.CharField(verbose_name='Название', max_length=255, blank=True, null=True, default='Название')
+    description = models.TextField(verbose_name='Описание', blank=True, null=True, default='Описание')
 
     class Meta:
         abstract = True
