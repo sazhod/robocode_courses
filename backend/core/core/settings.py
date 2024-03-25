@@ -37,14 +37,22 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+]
 
+# Add installed package
+
+INSTALLED_APPS += [
     'rest_framework',
     'rest_framework_simplejwt',
     'djoser',
 ]
+
 # Add user apps
+
 INSTALLED_APPS += [
     'user',
+    'course',
+    'common',
 ]
 
 MIDDLEWARE = [
@@ -57,7 +65,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'core.urls.py'
+ROOT_URLCONF = 'core.urls'
 
 TEMPLATES = [
     {
@@ -191,14 +199,18 @@ SIMPLE_JWT = {
 AUTH_USER_MODEL = "user.CustomUser"
 
 # Role fore Custom User Model
-SUPERUSER = 1
-TEACHER = 2
-STUDENT = 3
-UNDEFINED = 4
+SUPERUSER = 1  # Отвечает за работу через админ панель
+TEACHER = 2  # Отвечает за работу со студентами и их Д/з
+STUDENT = 3  # Отвечает за работу с Д/з
+UNDEFINED = 4  # Не распределенный
+MODERATOR = 5  # Отвечает за работу с курсами
+METHODIST = 6  # Отвечает за материал курсов
 
 USER_ROLE_CHOICES = (
       (SUPERUSER, 'Superuser'),
       (TEACHER, 'Преподаватель'),
       (STUDENT, 'Ученик'),
       (UNDEFINED, 'Не определен'),
+      (MODERATOR, 'Модератор'),
+      (METHODIST, 'Методист'),
 )
