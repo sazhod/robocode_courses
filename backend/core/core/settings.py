@@ -28,6 +28,24 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
+# Role fore Custom User Model
+SUPERUSER = 1  # Отвечает за работу через админ панель
+TEACHER = 2  # Отвечает за работу со студентами и их Д/з
+STUDENT = 3  # Отвечает за работу с Д/з
+UNDEFINED = 4  # Не распределенный
+MODERATOR = 5  # Отвечает за работу с курсами
+METHODIST = 6  # Отвечает за материал курсов
+
+USER_ROLE_CHOICES = (
+      (SUPERUSER, 'Superuser'),
+      (TEACHER, 'Преподаватель'),
+      (STUDENT, 'Ученик'),
+      (UNDEFINED, 'Не определен'),
+      (MODERATOR, 'Модератор'),
+      (METHODIST, 'Методист'),
+)
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -149,7 +167,9 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
     ),
 }
 
@@ -198,19 +218,3 @@ SIMPLE_JWT = {
 # Custom User model
 AUTH_USER_MODEL = "user.CustomUser"
 
-# Role fore Custom User Model
-SUPERUSER = 1  # Отвечает за работу через админ панель
-TEACHER = 2  # Отвечает за работу со студентами и их Д/з
-STUDENT = 3  # Отвечает за работу с Д/з
-UNDEFINED = 4  # Не распределенный
-MODERATOR = 5  # Отвечает за работу с курсами
-METHODIST = 6  # Отвечает за материал курсов
-
-USER_ROLE_CHOICES = (
-      (SUPERUSER, 'Superuser'),
-      (TEACHER, 'Преподаватель'),
-      (STUDENT, 'Ученик'),
-      (UNDEFINED, 'Не определен'),
-      (MODERATOR, 'Модератор'),
-      (METHODIST, 'Методист'),
-)

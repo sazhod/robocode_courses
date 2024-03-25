@@ -10,10 +10,12 @@ class CustomUser(AbstractUser):
     """
     Пользовательская модель User с авторизацией по полям email и password
     """
+    USER_ROLE_CHOICES = settings.USER_ROLE_CHOICES
+
     username = None
     email = models.EmailField("email адрес", unique=True)
     role = models.PositiveSmallIntegerField(verbose_name='Роль',
-                                            choices=settings.USER_ROLE_CHOICES, default=settings.STUDENT)
+                                            choices=USER_ROLE_CHOICES, default=settings.UNDEFINED)
 
     patronymic = models.CharField(verbose_name='Отчество', max_length=150, blank=True)
     phone_regex = RegexValidator(regex=r'^(\+7)\s?\(?[489][0-9]{2}\)\s?[0-9]{3}\-[0-9]{2}\-[0-9]{2}$',
