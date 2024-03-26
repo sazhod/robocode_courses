@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from common.models.mixins import TitleDescMixin, TimestampMixin
+from common.constants import LIMIT_CHOICE_TO
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
@@ -18,9 +19,11 @@ class Course(TitleDescMixin, TimestampMixin, models.Model):
     cost = models.DecimalField(max_digits=6, decimal_places=2, verbose_name='Стоимость')
 
     moderator = models.ForeignKey(to=User, on_delete=models.CASCADE,
-                                  limit_choices_to={'role': settings.MODERATOR}, related_name='moderator')
+                                  limit_choices_to=dict(role__in=LIMIT_CHOICE_TO['moderator']),
+                                  related_name='moderator')
     methodist = models.ForeignKey(to=User, on_delete=models.CASCADE,
-                                  limit_choices_to={'role': settings.METHODIST}, related_name='methodist')
+                                  limit_choices_to=dict(role__in=LIMIT_CHOICE_TO['methodist']),
+                                  related_name='methodist')
     is_published = models.BooleanField(verbose_name='Опубликован?', default=False)
 
     class Meta:

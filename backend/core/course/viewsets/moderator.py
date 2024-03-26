@@ -16,18 +16,14 @@ class ModeratorViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
 
-    @action(detail=False, methods=['get'], permission_classes=[ModeratorPermission])
+    @action(detail=False, methods=['post'], permission_classes=[ModeratorPermission])
     def create_course(self, request):
         """
         Эндпоинт для добавления новых курсов модератором
         """
+        serializer = CourseSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.validated_data['moderator'] = request.user
+            serializer.save()
+            return Response(serializer.data)
 
-        # Поправить логику создания
-        # Не проверяется дата курса
-        # Включить request.user как moderator
-        result = CourseSerializer(data=request.data, many=False)
-        if not result.is_valid():
-            return Response(result.data)
-
-        result.save()
-        return Response(result.data)
