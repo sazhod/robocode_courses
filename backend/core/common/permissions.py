@@ -6,7 +6,7 @@ class IsModerator(BasePermission):
     message = "Доступ запрещен."
 
     def has_permission(self, request, view):
-        print(request.user.is_authenticated)
+        print(request.user)
         return request.user.is_authenticated and (request.user.role == settings.MODERATOR or request.user.is_superuser)
 
 

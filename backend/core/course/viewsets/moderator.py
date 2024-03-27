@@ -16,10 +16,7 @@ User = get_user_model()
 class ModeratorViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
-    # authentication_classes = []
-    # permission_classes = []
 
-    # Не работает вместе авторизацией по JWT
     def get_permissions(self):
         permission_classes = []
         if self.action == 'create_course':
@@ -31,7 +28,6 @@ class ModeratorViewSet(viewsets.ModelViewSet):
         """
         Эндпоинт для добавления новых курсов модератором
         """
-
         serializer = CourseSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.validated_data['moderator'] = request.user
