@@ -19,18 +19,31 @@ class ModeratorViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         permission_classes = []
-        if self.action == 'create_course':
+        if self.action in ['create_course', 'update_course']:
             permission_classes.append(IsModerator)
         return [permission() for permission in permission_classes]
 
     @action(detail=False, methods=['post'])
     def create_course(self, request):
         """
-        Эндпоинт для добавления новых курсов модератором
+        Endpoint course/create
+        method POST
+        Отвечает за добавление нового курса модератором
         """
         serializer = CourseSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.validated_data['moderator'] = request.user
             serializer.save()
             return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def update_course(self, request, pk=None):
+        """
+        Endpoint course/<int: pk>/update
+        method POST
+        Отвечает за обновление информации о курсе модератором
+        """
+        if pk is None:
+            return Response({'status': 'Выберите курс.'}, status=status.HTTP_400_BAD_REQUEST)
+
 
