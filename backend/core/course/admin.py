@@ -4,5 +4,5 @@ from .models.course import Course
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('id', 'title', 'is_published')
 

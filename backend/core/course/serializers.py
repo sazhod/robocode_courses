@@ -8,12 +8,11 @@ from django.utils import timezone
 User = get_user_model()
 
 
-class CourseSerializer(serializers.ModelSerializer):
-    moderator = CustomUserSerializer(read_only=True)
-
+class BaseCourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
-        fields = ('start_date', 'cost', 'methodist', 'moderator')
+        fields = '__all__'
+        abstract = True
 
     def validate(self, attrs):
         if attrs['start_date'] is None:
@@ -21,6 +20,26 @@ class CourseSerializer(serializers.ModelSerializer):
         if attrs['start_date'] <= timezone.localdate():
             raise serializers.ValidationError('Дата начала должна быть позже текущей даты!')
         return attrs
+
+
+class CreateCourseSerializer(BaseCourseSerializer):
+    moderator = CustomUserSerializer(read_only=True)
+
+    class Meta:
+        model = Course
+        fields = ('start_date', 'cost', 'methodist', 'moderator')
+
+
+class UpdateCourseSerializer(BaseCourseSerializer):
+    class Meta:
+        model = Course
+        fields = '__all__'
+
+    def validate(self, attrs):
+        if 'start_date' not in attrs:
+            return attrs
+        return super().validate(attrs)
+
 
 # class CustomUserSerializer(serializers.ModelSerializer):
 #     class Meta:

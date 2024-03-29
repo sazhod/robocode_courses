@@ -9,6 +9,7 @@ router = DefaultRouter()
 
 urlpatterns = [
     path('create', ModeratorViewSet.as_view({'post': 'create_course'})),
+    path('<int:pk>/update', ModeratorViewSet.as_view({'patch': 'update_course'})),
 ]
 
 # urlpatterns += router.urls

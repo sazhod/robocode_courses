@@ -15,7 +15,7 @@ class Course(TitleDescMixin, TimestampMixin, models.Model):
         Модель описывающая курс
     """
     image = models.ImageField(verbose_name='Изображение', blank=True, null=True)
-    start_date = models.DateField(verbose_name='Дата старта', null=True)
+    start_date = models.DateField(verbose_name='Дата старта')
     cost = models.DecimalField(max_digits=6, decimal_places=2, verbose_name='Стоимость')
 
     moderator = models.ForeignKey(to=User, on_delete=models.CASCADE,

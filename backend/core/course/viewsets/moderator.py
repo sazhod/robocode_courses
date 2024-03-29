@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from ..models.course import Course
-from ..serializers import CourseSerializer
+from ..serializers import CreateCourseSerializer, UpdateCourseSerializer
 from common.permissions import IsModerator
 
 
@@ -15,7 +15,7 @@ User = get_user_model()
 
 class ModeratorViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
-    serializer_class = CourseSerializer
+    serializer_class = CreateCourseSerializer
 
     def get_permissions(self):
         permission_classes = []
@@ -30,20 +30,26 @@ class ModeratorViewSet(viewsets.ModelViewSet):
         method POST
         Отвечает за добавление нового курса модератором
         """
-        serializer = CourseSerializer(data=request.data)
+        serializer = CreateCourseSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.validated_data['moderator'] = request.user
             serializer.save()
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['patch'])
     def update_course(self, request, pk=None):
         """
-        Endpoint course/<int: pk>/update
+        Endpoint course/<int:pk>/update
         method POST
         Отвечает за обновление информации о курсе модератором
         """
         if pk is None:
             return Response({'status': 'Выберите курс.'}, status=status.HTTP_400_BAD_REQUEST)
+        instance = self.get_object()
+        serializer = UpdateCourseSerializer(instance=instance, data=request.data, partial=True)
+
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
 
