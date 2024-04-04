@@ -9,3 +9,7 @@ class IsModerator(BasePermission):
         return request.user.is_authenticated and (request.user.role == settings.MODERATOR or request.user.is_superuser)
 
 
+class IsMethodist(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and (request.user.role == settings.METHODIST or request.user.is_superuser)
+
