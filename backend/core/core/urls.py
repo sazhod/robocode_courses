@@ -23,7 +23,7 @@ from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshVie
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/users/', include('user.urls')),
-    path('api/course/', include('course.urls')),
+    path('api/', include('course.urls')),
 ]
 # JWT + Djoser Endpoints
 urlpatterns += [
