@@ -19,20 +19,20 @@ class UpgradeUserViewSet(viewsets.ModelViewSet):
     queryset = User.undefined_users.all()
     serializer_class = CustomUserSerializer
 
-    @action(detail=True, methods=['put'], permission_classes=[IsAdminUser])
+    @action(detail=True, methods=['patch'], permission_classes=[IsAdminUser])
     def to_moderator(self, request, pk=None):
         """
-        Endpoint users/<int>/upgrade/to_moderator
-        method PUT
+        Endpoint users/{id}/upgrade/to_moderator
+        method PATCH
         Отвечает за предоставление нераспределенному пользователю роли Moderator
         """
         return upgrade_undefined_user_role(pk, settings.MODERATOR)
 
-    @action(detail=True, methods=['put'], permission_classes=[IsAdminUser])
+    @action(detail=True, methods=['patch'], permission_classes=[IsAdminUser])
     def to_methodist(self, request, pk=None):
         """
-        Endpoint users/<int>/upgrade/to_methodist
-        method PUT
+        Endpoint users/{id}/upgrade/to_methodist
+        method PATCH
         Отвечает за предоставление нераспределенному пользователю роли Methodist
         """
         return upgrade_undefined_user_role(pk, settings.METHODIST)

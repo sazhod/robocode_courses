@@ -12,4 +12,13 @@ LIMIT_CHOICE_TO = {
     ]
 }
 
+DEFAULT_RESPONSE = {
+    'error': None,
+    'message': None,
+    'data': None
+}
+
+
+def get_default_response():
+    return DEFAULT_RESPONSE.copy()
 

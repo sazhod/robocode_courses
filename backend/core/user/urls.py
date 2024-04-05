@@ -15,8 +15,8 @@ urlpatterns = [
     path('undefined/', UndefinedUsersListAPIView.as_view()),
     # path('<int:pk>/', UserRetrieveAPIView.as_view()),
     # path('registration/', RegistrationAPIView.as_view()),
-    path('<int:pk>/upgrade/to_moderator', UpgradeUserViewSet.as_view({'put': 'to_moderator'})),
-    path('<int:pk>/upgrade/to_methodist', UpgradeUserViewSet.as_view({'put': 'to_methodist'})),
+    path('<int:pk>/upgrade/to_moderator', UpgradeUserViewSet.as_view({'patch': 'to_moderator'})),
+    path('<int:pk>/upgrade/to_methodist', UpgradeUserViewSet.as_view({'patch': 'to_methodist'})),
 ]
 
 # urlpatterns += router.urls

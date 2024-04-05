@@ -8,6 +8,7 @@ from rest_framework import status, viewsets
 from ..models.course import Course
 from ..serializers import CreateCourseSerializer, UpdateCourseSerializer
 from common.permissions import IsModerator
+from common.constants import get_default_response
 
 
 User = get_user_model()
@@ -33,11 +34,22 @@ class CourseViewSet(viewsets.ModelViewSet):
         method POST
         Отвечает за добавление нового курса модератором
         """
+        response: dict = get_default_response()
+
         serializer = CreateCourseSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
+        if serializer.is_valid():
             serializer.validated_data['moderator'] = request.user
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            response.update({
+                'message': 'Курс успешно добавлен.',
+                'data': serializer.data
+            })
+            return Response(response, status=status.HTTP_200_OK)
+
+        response.update({
+            'error': serializer.errors
+        })
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['patch'])
     def update_course(self, request, pk=None):
@@ -49,8 +61,18 @@ class CourseViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         serializer = UpdateCourseSerializer(instance=instance, data=request.data, partial=True)
 
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+        response: dict = get_default_response()
 
+        if serializer.is_valid():
+            serializer.save()
+            response.update({
+                'message': 'Курс успешно обновлен.',
+                'data': serializer.data
+            })
+            return Response(response, status=status.HTTP_200_OK)
+
+        response.update({
+            'error': serializer.errors
+        })
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
