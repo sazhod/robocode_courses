@@ -95,18 +95,27 @@ class CourseViewSet(viewsets.ModelViewSet):
                 'message': 'Курс успешно добавлен.',
                 'data': serializer.data
             })
-            return Response(response, status=status.HTTP_200_OK)
+            return Response(response, status=status.HTTP_201_CREATED)
 
         response.update({
             'error': serializer.errors
         })
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-    def partial_update(self, request, pk=None):
+    def update(self, request, pk=None):
         """
         Endpoint api/course/{id}
         method PATCH
         Отвечает за обновление информации о курсе модератором
+        """
+        # TODO: Отдельно реализовать полное обновление
+        return self.partial_update(request, pk)
+
+    def partial_update(self, request, pk=None):
+        """
+        Endpoint api/course/{id}
+        method PATCH
+        Отвечает за частичное обновление информации о курсе модератором
         """
         instance = self.get_object()
         serializer = UpdateCourseSerializer(instance=instance, data=request.data, partial=True)
