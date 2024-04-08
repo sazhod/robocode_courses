@@ -20,12 +20,11 @@ class CourseViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         permission_classes = []
-        if self.action in ['create_course', 'update_course']:
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
             permission_classes.append(IsModerator)
         return [permission() for permission in permission_classes]
 
-    @action(detail=False, methods=['get'])
-    def list(self, request, *args, **kwargs):
+    def list(self, request):
         """
         Endpoint api/course/
         method GET
@@ -54,7 +53,6 @@ class CourseViewSet(viewsets.ModelViewSet):
         })
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True, methods=['get'])
     def retrieve(self, request, pk=None):
         """
         Endpoint api/course/{id}
@@ -81,8 +79,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         })
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['post'])
-    def create_course(self, request):
+    def create(self, request):
         """
         Endpoint api/course/
         method POST
@@ -105,8 +102,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         })
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True, methods=['patch'])
-    def update_course(self, request, pk=None):
+    def partial_update(self, request, pk=None):
         """
         Endpoint api/course/{id}
         method PATCH
@@ -130,3 +126,13 @@ class CourseViewSet(viewsets.ModelViewSet):
         })
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
+    def destroy(self, request, pk=None):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+
+        response: dict = get_default_response()
+        response.update({
+            'message': 'Курс был успешно удален.'
+        })
+
+        return Response(response, status=status.HTTP_200_OK)
