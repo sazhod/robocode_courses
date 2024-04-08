@@ -25,7 +25,7 @@ class BaseCourseSerializer(serializers.ModelSerializer):
 
 
 class CreateCourseSerializer(BaseCourseSerializer):
-    moderator = CustomUserSerializer(read_only=True)
+    # moderator = CustomUserSerializer(read_only=True)
 
     class Meta:
         model = Course

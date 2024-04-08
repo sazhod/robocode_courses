@@ -6,8 +6,8 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from ..models.course import Course
-from ..serializers import CreateCourseSerializer, UpdateCourseSerializer
-from common.permissions import IsModerator
+from ..serializers import CreateCourseSerializer, UpdateCourseSerializer, BaseCourseSerializer
+from common.permissions import IsModerator, IsMethodist
 from common.constants import get_default_response
 
 
@@ -24,13 +24,67 @@ class CourseViewSet(viewsets.ModelViewSet):
             permission_classes.append(IsModerator)
         return [permission() for permission in permission_classes]
 
-    def post(self):
-        pass
+    @action(detail=False, methods=['get'])
+    def list(self, request, *args, **kwargs):
+        """
+        Endpoint api/course/
+        method GET
+        Отвечает за получения списка курсов.
+        Авторизованный модератор/методист/superuser получает список всех курсов.
+        Остальные получают только опубликованные курсы.
+        """
+        if IsModerator().has_permission(request, self) or IsMethodist().has_permission(request, self):
+            queryset = self.queryset
+        else:
+            queryset = Course.objects.filter(is_published=True)
+
+        serializer = BaseCourseSerializer(data=queryset, many=True)
+        serializer.is_valid()
+
+        response: dict = get_default_response()
+        if queryset:
+            response.update({
+                'message': 'Список курсов.',
+                'data': serializer.data
+            })
+            return Response(response, status=status.HTTP_200_OK)
+
+        response.update({
+            'error': 'Курсы не предоставлены.'
+        })
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['get'])
+    def retrieve(self, request, pk=None):
+        """
+        Endpoint api/course/{id}
+        method GET
+        Отвечает за получения информации о курсе.
+        Авторизованный модератор/методист/superuser получает информации о любом курсе.
+        Остальные получают только информацию об опубликованном курсе.
+        """
+        instance = self.get_object()
+        response: dict = get_default_response()
+
+        if ((IsModerator().has_permission(request, self) or IsMethodist().has_permission(request, self))
+                or instance.is_published):
+            serializer = BaseCourseSerializer(instance=instance)
+
+            response.update({
+                'message': 'Информация о выбранном курсе.',
+                'data': serializer.data
+            })
+            return Response(response, status=status.HTTP_200_OK)
+
+        response.update({
+            'error': 'Курс не найден.'
+        })
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['post'])
     def create_course(self, request):
         """
-        Endpoint course/create
+        Endpoint api/course/
         method POST
         Отвечает за добавление нового курса модератором
         """
@@ -54,7 +108,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['patch'])
     def update_course(self, request, pk=None):
         """
-        Endpoint course/<int:pk>/update
+        Endpoint api/course/{id}
         method PATCH
         Отвечает за обновление информации о курсе модератором
         """
