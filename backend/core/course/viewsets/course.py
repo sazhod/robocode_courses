@@ -136,6 +136,11 @@ class CourseViewSet(viewsets.ModelViewSet):
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, pk=None):
+        """
+        Endpoint api/course/{id}
+        method DELETE
+        Отвечает за удаление курса модератором
+        """
         instance = self.get_object()
         self.perform_destroy(instance)
 
