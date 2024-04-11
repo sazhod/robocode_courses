@@ -19,15 +19,15 @@ class ModuleViewSet(viewsets.ModelViewSet):
     serializer_class = ModuleSerializer
 
     def get_permissions(self):
-        permission_classes = []
+        permission_classes = [IsAuthenticated]
         if self.action in ['create_module', 'update_module']:
             permission_classes.append(IsMethodist)
         return [permission() for permission in permission_classes]
 
-    @action(detail=False, methods=['post'])
-    def create_module(self, request, course_pk: int):
+    # TODO: Разобраться с эндпоинтами api/course/{id}/module/ или api/module/
+    def create(self, request, course_pk: int):
         """
-        Endpoint course/{id}/module/create
+        Endpoint course/{id}/module/
         method POST
         Отвечает за добавление нового модуля в курс методистом
         """
@@ -48,10 +48,12 @@ class ModuleViewSet(viewsets.ModelViewSet):
         })
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True, methods=['patch'])
-    def update_module(self, request, course_pk: int, pk=None):
+    def update(self, request, course_pk: int, pk=None):
+        return self.partial_update(request, course_pk, pk)
+
+    def partial_update(self, request, course_pk: int, pk=None):
         """
-        Endpoint course/{id}/update
+        Endpoint course/{id}/module/{id}
         method PATCH
         Отвечает за обновление информации о модуле методистом
         """
