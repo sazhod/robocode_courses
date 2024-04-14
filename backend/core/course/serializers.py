@@ -50,6 +50,8 @@ class ModuleSerializer(serializers.ModelSerializer):
 
 
 class CreateModuleSerializer(serializers.ModelSerializer):
+    course = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta:
         model = Module
         fields = ('course', 'title', 'description', 'serial_number')

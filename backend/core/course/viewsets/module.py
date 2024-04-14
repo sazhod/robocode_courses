@@ -20,13 +20,38 @@ class ModuleViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         permission_classes = [IsAuthenticated]
-        if self.action in ['create_module', 'update_module']:
-            permission_classes.append(IsMethodist)
+        # if self.action in ['create_module', 'update_module']:
+        #     permission_classes.append(IsMethodist)
         return [permission() for permission in permission_classes]
+
+    def list(self, request, course_pk: int):
+        """
+        Endpoint courses/{id}/modules/
+        method GET
+        Отвечает за получение списка модулей в выбранном курсе.
+        """
+        response: dict = get_default_response()
+        request.data['course'] = course_pk
+        modules = Module.objects.filter(course__pk=course_pk)
+        if not modules:
+            response.update({
+                'error': f'Модули не найдены.',
+            })
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = ModuleSerializer(data=modules, many=True)
+        response: dict = get_default_response()
+        serializer.is_valid()
+
+        response.update({
+            'message': f'Список модулей курса {course_pk}.',
+            'data': serializer.data
+        })
+        return Response(response, status=status.HTTP_200_OK)
 
     def create(self, request, course_pk: int):
         """
-        Endpoint course/{id}/module/
+        Endpoint courses/{id}/modules/
         method POST
         Отвечает за добавление нового модуля в курс методистом
         """
