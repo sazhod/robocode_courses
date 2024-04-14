@@ -24,7 +24,6 @@ class ModuleViewSet(viewsets.ModelViewSet):
             permission_classes.append(IsMethodist)
         return [permission() for permission in permission_classes]
 
-    # TODO: Разобраться с эндпоинтами api/course/{id}/module/ или api/module/
     def create(self, request, course_pk: int):
         """
         Endpoint course/{id}/module/

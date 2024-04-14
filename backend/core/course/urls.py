@@ -7,7 +7,7 @@ from course.viewsets.lesson import LessonViewSet
 
 router = SimpleRouter()
 router.register(r'courses', CourseViewSet, basename='courses')
-router.register(r'modules', ModuleViewSet, basename='modules')
+router.register(r'courses/<int:course_id>/modules', ModuleViewSet, basename='modules')
 
 
 urlpatterns = [

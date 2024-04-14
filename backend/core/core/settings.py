@@ -205,6 +205,7 @@ SPECTACULAR_SETTINGS = {
         "filter": True, # включить поиск по тегам
     },
     "COMPONENT_SPLIT_REQUEST": True,
+    'SCHEMA_COERCE_PATH_PK_SUFFIX': True,
     'SCHEMA_PATH_PREFIX': r'/api/',
 
 }
