@@ -196,6 +196,20 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }
 
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Post API", # название проекта
+    "VERSION": "0.0.1", # версия проекта
+    "SERVE_INCLUDE_SCHEMA": False, # исключить эндпоинт /schema
+    "SWAGGER_UI_SETTINGS": {
+        "filter": True, # включить поиск по тегам
+    },
+    "COMPONENT_SPLIT_REQUEST": True,
+    'SCHEMA_PATH_PREFIX': r'/api/',
+
+}
+
+
 # Custom User model
 AUTH_USER_MODEL = "user.CustomUser"
 
