@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.conf import settings
+from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
@@ -11,17 +12,25 @@ from common.permissions import IsMethodist
 from common.constants import get_default_response
 
 
+
 User = get_user_model()
 
 
+@extend_schema_view(
+    list=extend_schema(tags=['modules']),
+    retrieve=extend_schema(tags=['modules']),
+    create=extend_schema(tags=['modules']),
+    update=extend_schema(tags=['modules']),
+    partial_update=extend_schema(tags=['modules']),
+)
 class ModuleViewSet(viewsets.ModelViewSet):
     queryset = Module.objects.all()
     serializer_class = ModuleSerializer
 
     def get_permissions(self):
         permission_classes = [IsAuthenticated]
-        # if self.action in ['create_module', 'update_module']:
-        #     permission_classes.append(IsMethodist)
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            permission_classes.append(IsMethodist)
         return [permission() for permission in permission_classes]
 
     def list(self, request, course_pk: int):
@@ -49,6 +58,25 @@ class ModuleViewSet(viewsets.ModelViewSet):
         })
         return Response(response, status=status.HTTP_200_OK)
 
+    def retrieve(self, request, course_pk: int, serial_number: int):
+        response: dict = get_default_response()
+
+        try:
+            instance = Module.objects.get(course__pk=course_pk, serial_number=serial_number)
+        except Module.DoesNotExist:
+            response.update({
+                'error': f'Модуль под номером {serial_number} в курсе {course_pk} не найден.',
+            })
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = ModuleSerializer(instance=instance)
+
+        response.update({
+            'message': f'Информация о выбранном модуле курса {course_pk}',
+            'data': serializer.data
+        })
+        return Response(response, status=status.HTTP_200_OK)
+
     def create(self, request, course_pk: int):
         """
         Endpoint courses/{id}/modules/
@@ -72,10 +100,10 @@ class ModuleViewSet(viewsets.ModelViewSet):
         })
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-    def update(self, request, course_pk: int, pk=None):
-        return self.partial_update(request, course_pk, pk)
+    def update(self, request, course_pk: int, serial_number: int):
+        return self.partial_update(request, course_pk, serial_number)
 
-    def partial_update(self, request, course_pk: int, pk=None):
+    def partial_update(self, request, course_pk: int, serial_number: int):
         """
         Endpoint course/{id}/module/{id}
         method PATCH
@@ -97,3 +125,22 @@ class ModuleViewSet(viewsets.ModelViewSet):
             'error': serializer.errors
         })
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, course_pk: int, serial_number: int):
+        response: dict = get_default_response()
+        try:
+            instance = Module.objects.get(course__pk=course_pk, serial_number=serial_number)
+        except Module.DoesNotExist:
+            response.update({
+                'error': f'Модуль под номером {serial_number} в курсе {course_pk} не найден.',
+            })
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+        self.perform_destroy(instance)
+
+        response.update({
+            'message': f'Модуль под номером {serial_number} в курсе {course_pk} был успешно удален.'
+        })
+
+        return Response(response, status=status.HTTP_200_OK)
+

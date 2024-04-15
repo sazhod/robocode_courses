@@ -8,8 +8,8 @@ from course.viewsets.lesson import LessonViewSet
 courses_router = SimpleRouter()
 courses_router.register(r'courses', CourseViewSet, basename='courses')
 
-modules_router = SimpleRouter()
-modules_router.register(r'/modules', ModuleViewSet, basename='modules')
+# modules_router = SimpleRouter()
+# modules_router.register(r'/modules', ModuleViewSet, basename='modules')
 
 
 urlpatterns = [
@@ -17,7 +17,9 @@ urlpatterns = [
     path('modules/<int:module_pk>/lessons/<int:pk>', LessonViewSet.as_view({'patch': 'update_lesson'})),
 
     path('', include(courses_router.urls)),
-    path('courses/<int:course_pk>', include(modules_router.urls))
+    path('courses/<int:course_pk>/modules', ModuleViewSet.as_view({'get': 'list', 'post': 'create'})),
+    path('courses/<int:course_pk>/modules/<int:serial_number>',
+         ModuleViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'})),
 ]
 # print(router.urls)
 # urlpatterns += router.urls
