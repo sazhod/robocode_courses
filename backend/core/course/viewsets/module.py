@@ -59,6 +59,11 @@ class ModuleViewSet(viewsets.ModelViewSet):
         return Response(response, status=status.HTTP_200_OK)
 
     def retrieve(self, request, course_pk: int, serial_number: int):
+        """
+        Endpoint courses/{id}/modules/{serial_number}
+        method GET
+        Отвечает за получение информации о модуле в выбранном курсе.
+        """
         response: dict = get_default_response()
 
         try:
@@ -81,7 +86,7 @@ class ModuleViewSet(viewsets.ModelViewSet):
         """
         Endpoint courses/{id}/modules/
         method POST
-        Отвечает за добавление нового модуля в курс методистом
+        Отвечает за добавление нового модуля в курс методистом.
         """
         request.data['course'] = course_pk
         serializer = CreateModuleSerializer(data=request.data)
@@ -101,13 +106,18 @@ class ModuleViewSet(viewsets.ModelViewSet):
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, course_pk: int, serial_number: int):
+        """
+        Endpoint courses/{id}/modules/{serial_number}
+        method PUT
+        Отвечает за полное обновление информации о модуле в выбранном курсе методистом.
+        """
         return self.partial_update(request, course_pk, serial_number)
 
     def partial_update(self, request, course_pk: int, serial_number: int):
         """
-        Endpoint course/{id}/module/{id}
+        Endpoint course/{id}/module/{serial_number}
         method PATCH
-        Отвечает за обновление информации о модуле методистом
+        Отвечает за частичное обновление информации о модуле в выбранном курсе методистом.
         """
         instance = self.get_object()
         serializer = CreateModuleSerializer(instance=instance, data=request.data, partial=True)
@@ -127,6 +137,11 @@ class ModuleViewSet(viewsets.ModelViewSet):
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, course_pk: int, serial_number: int):
+        """
+        Endpoint course/{id}/module/{serial_number}
+        method DELETE
+        Отвечает за удаление модуля в выбранном курсе методистом.
+        """
         response: dict = get_default_response()
         try:
             instance = Module.objects.get(course__pk=course_pk, serial_number=serial_number)
