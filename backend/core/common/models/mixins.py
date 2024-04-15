@@ -13,7 +13,7 @@ class TitleDescMixin(models.Model):
         abstract = True
 
     def __str__(self):
-        return self.title
+        return f'{self.title}({self.pk})'
 
 
 class TimestampMixin(models.Model):
