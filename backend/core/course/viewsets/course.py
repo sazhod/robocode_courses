@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status, viewsets
 from ..models.course import Course
 from ..serializers import CreateCourseSerializer, UpdateCourseSerializer, BaseCourseSerializer
-from common.permissions import IsModerator, IsMethodist
+from common.permissions import IsModerator, IsMethodist, is_moderator_or_methodist
 from common.constants import get_default_response
 
 
@@ -28,7 +28,8 @@ class CourseViewSet(viewsets.ModelViewSet):
         Авторизованный модератор/методист/superuser получает список всех курсов.
         Остальные получают только опубликованные курсы.
         """
-        if IsModerator().has_permission(request, self) or IsMethodist().has_permission(request, self):
+
+        if is_moderator_or_methodist(request=request, view=self):
             queryset = self.queryset
         else:
             queryset = Course.objects.filter(is_published=True)
@@ -60,8 +61,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         response: dict = get_default_response()
 
-        if ((IsModerator().has_permission(request, self) or IsMethodist().has_permission(request, self))
-                or instance.is_published):
+        if is_moderator_or_methodist(request=request, view=self) or instance.is_published:
             serializer = BaseCourseSerializer(instance=instance)
 
             response.update({

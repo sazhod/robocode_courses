@@ -4,6 +4,7 @@ from rest_framework.test import APITestCase
 from ..models.course import Course
 from ..serializers import BaseCourseSerializer, CreateCourseSerializer, UpdateCourseSerializer
 from django.contrib.auth import get_user_model
+import datetime
 
 
 User = get_user_model()
@@ -29,7 +30,7 @@ class CourseViewSetTestCase(APITestCase):
             phone_number='+7 (002) 999-99-99'
         )
         self.course_unpublished = Course.objects.create(
-            start_date='2024-04-10',
+            start_date=datetime.date.today() + datetime.timedelta(days=1),
             cost=100,
             moderator=self.moderator,
             methodist=self.methodist,
@@ -46,10 +47,12 @@ class CourseViewSetTestCase(APITestCase):
 
     def test_get_queryset_authenticated_user(self):
         url = reverse('courses-list')
+
         response = self.client.get(url)
 
-        self.assertIn('data', response.data)
         self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertIn('data', response.data)
+        self.assertIsNotNone(response.data.get('data'))
 
         serializer = BaseCourseSerializer(self.courses, many=True)
         response_course_data = response.data.get('data')
@@ -62,6 +65,7 @@ class CourseViewSetTestCase(APITestCase):
 
         self.assertEquals(response.status_code, status.HTTP_200_OK)
         self.assertIn('data', response.data)
+        self.assertIsNotNone(response.data.get('data'))
 
         serializer = BaseCourseSerializer([self.course_published], many=True)
         response_course_data = response.data.get('data')
@@ -70,14 +74,16 @@ class CourseViewSetTestCase(APITestCase):
     def test_create_course(self):
         url = reverse('courses-list')
         data = {
-            'start_date': '2024-04-10',
+            'start_date': datetime.date.today() + datetime.timedelta(days=1),
             'cost': 100,
             'methodist': self.methodist.pk,
         }
 
         response = self.client.post(url, data)
+
         self.assertEquals(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('data', response.data)
+        self.assertIsNotNone(response.data.get('data'))
         response_course_data: dict = response.data.get('data')
 
         self.assertEquals(response_course_data.get('moderator'), self.moderator.pk)
@@ -88,6 +94,7 @@ class CourseViewSetTestCase(APITestCase):
         response = self.client.get(url)
         self.assertEquals(response.status_code, status.HTTP_200_OK)
         self.assertIn('data', response.data)
+        self.assertIsNotNone(response.data.get('data'))
 
         serializer = BaseCourseSerializer(self.course_unpublished)
         response_course_data = response.data.get('data')
@@ -98,11 +105,12 @@ class CourseViewSetTestCase(APITestCase):
         data = {
             'title': 'Test title',
             'description': 'Test description',
-            'start_date': '2024-04-11',
+            'start_date': datetime.date.today() + datetime.timedelta(days=2),
         }
         response = self.client.put(url, data)
         self.assertEquals(response.status_code, status.HTTP_200_OK)
         self.assertIn('data', response.data)
+        self.assertIsNotNone(response.data.get('data'))
 
         updated_course = Course.objects.get(pk=self.course_unpublished.pk)
         serializer = UpdateCourseSerializer(updated_course)
@@ -117,6 +125,7 @@ class CourseViewSetTestCase(APITestCase):
         response = self.client.put(url, data)
         self.assertEquals(response.status_code, status.HTTP_200_OK)
         self.assertIn('data', response.data)
+        self.assertIsNotNone(response.data.get('data'))
 
         updated_course = Course.objects.get(pk=self.course_unpublished.pk)
         serializer = UpdateCourseSerializer(updated_course)
@@ -128,12 +137,11 @@ class CourseViewSetTestCase(APITestCase):
         response = self.client.delete(url)
 
         self.assertEquals(response.status_code, status.HTTP_200_OK)
-
         self.assertIn('error', response.data)
-        response_course_error = response.data.get('error')
-        self.assertEquals(response_course_error, None)
+        self.assertIsNone(response.data.get('error'))
 
-        self.assertIn('data', response.data)
+        self.assertIn('message', response.data)
+        self.assertIsNotNone(response.data.get('message'))
         response_course_message = response.data.get('message')
         self.assertEquals(response_course_message, 'Курс был успешно удален.')
 
