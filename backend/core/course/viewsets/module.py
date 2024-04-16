@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework import status, viewsets
 from ..models.module import Module, Course
 from ..serializers import ModuleSerializer, CreateModuleSerializer
-from common.permissions import IsMethodist
+from common.permissions import IsMethodist, is_moderator_or_methodist
 from common.constants import get_default_response
 
 
@@ -41,7 +41,14 @@ class ModuleViewSet(viewsets.ModelViewSet):
         """
         response: dict = get_default_response()
         request.data['course'] = course_pk
-        modules = Module.objects.filter(course__pk=course_pk)
+        filter_params = {
+            'course__pk': course_pk
+        }
+        if not is_moderator_or_methodist(request=request, view=self):
+            filter_params['is_published'] = True
+
+        modules = Module.objects.filter(**filter_params)
+
         if not modules:
             response.update({
                 'error': f'Модули не найдены.',
@@ -67,7 +74,13 @@ class ModuleViewSet(viewsets.ModelViewSet):
         response: dict = get_default_response()
 
         try:
-            instance = Module.objects.get(course__pk=course_pk, serial_number=serial_number)
+            filter_params = {
+                'course__pk': course_pk,
+                'serial_number': serial_number,
+            }
+            if not is_moderator_or_methodist(request=request, view=self):
+                filter_params['is_published'] = True
+            instance = Module.objects.get(**filter_params)
         except Module.DoesNotExist:
             response.update({
                 'error': f'Модуль под номером {serial_number} в курсе {course_pk} не найден.',
@@ -119,10 +132,18 @@ class ModuleViewSet(viewsets.ModelViewSet):
         method PATCH
         Отвечает за частичное обновление информации о модуле в выбранном курсе методистом.
         """
-        instance = self.get_object()
+        response: dict = get_default_response()
+
+        try:
+            instance = Module.objects.get(course__pk=course_pk, serial_number=serial_number)
+        except Module.DoesNotExist:
+            response.update({
+                'error': f'Модуль под номером {serial_number} в курсе {course_pk} не найден.',
+            })
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = CreateModuleSerializer(instance=instance, data=request.data, partial=True)
 
-        response: dict = get_default_response()
         if serializer.is_valid():
             serializer.save()
             response.update({
@@ -143,6 +164,7 @@ class ModuleViewSet(viewsets.ModelViewSet):
         Отвечает за удаление модуля в выбранном курсе методистом.
         """
         response: dict = get_default_response()
+
         try:
             instance = Module.objects.get(course__pk=course_pk, serial_number=serial_number)
         except Module.DoesNotExist:
