@@ -17,9 +17,11 @@ urlpatterns = [
     path('modules/<int:module_pk>/lessons/<int:pk>', LessonViewSet.as_view({'patch': 'update_lesson'})),
 
     path('', include(courses_router.urls)),
-    path('courses/<int:course_pk>/modules', ModuleViewSet.as_view({'get': 'list', 'post': 'create'})),
+    path('courses/<int:course_pk>/modules', ModuleViewSet.as_view({'get': 'list', 'post': 'create'}),
+         name='modules-list'),
     path('courses/<int:course_pk>/modules/<int:serial_number>',
-         ModuleViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'})),
+         ModuleViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
+         name='modules-detail'),
 ]
 # print(router.urls)
 # urlpatterns += router.urls
