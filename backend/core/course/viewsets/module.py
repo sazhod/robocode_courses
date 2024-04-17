@@ -10,6 +10,7 @@ from ..models.module import Module, Course
 from ..serializers import ModuleSerializer, CreateModuleSerializer
 from common.permissions import IsMethodist, is_moderator_or_methodist
 from common.constants import get_default_response
+from django.db.utils import IntegrityError
 
 
 
@@ -101,18 +102,33 @@ class ModuleViewSet(viewsets.ModelViewSet):
         method POST
         Отвечает за добавление нового модуля в курс методистом.
         """
-        # TODO: AttributeError: This QueryDict instance is immutable
-        request.data['course'] = course_pk
+        response: dict = get_default_response()
+        try:
+            course = Course.objects.get(pk=course_pk)
+        except Course.DoesNotExist:
+            response.update({
+                'error': f'Курс {course_pk} не найден.',
+            })
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = CreateModuleSerializer(data=request.data)
 
-        response: dict = get_default_response()
         if serializer.is_valid():
-            serializer.save()
+            serializer.validated_data['course'] = course
+            try:
+                serializer.save()
+            except IntegrityError:
+                response.update({
+                    'error': f'В курсе {course_pk} уже существует модуль под номером '
+                             f'{serializer.validated_data["serial_number"]}.',
+                })
+                return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
             response.update({
                 'message': 'Модуль успешно добавлен.',
                 'data': serializer.data
             })
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(response, status=status.HTTP_201_CREATED)
 
         response.update({
             'error': serializer.errors

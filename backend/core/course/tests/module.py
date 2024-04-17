@@ -5,6 +5,7 @@ from ..models.module import Module
 from ..models.course import Course
 from ..serializers import ModuleSerializer, CreateModuleSerializer
 from django.contrib.auth import get_user_model
+import datetime
 
 
 User = get_user_model()
@@ -36,12 +37,13 @@ class ModuleViewSetTestCase(APITestCase):
         self.client.force_authenticate(user=self.methodist)
 
         self.course = Course.objects.create(
-            start_date='2024-04-18',
+            start_date=datetime.date.today() + datetime.timedelta(days=1),
             cost=100,
             moderator=self.moderator,
             methodist=self.methodist,
             is_published=False
         )
+
         self.first_module_published = Module.objects.create(
             title='first module',
             description='first module',
@@ -110,11 +112,50 @@ class ModuleViewSetTestCase(APITestCase):
         url = reverse('modules-list', args=(self.course.pk, ))
 
         data = {
-            'title': 'second module',
-            'description': 'second module',
+            'title': 'third module',
+            'description': 'third module',
             'serial_number': 3
         }
 
         response = self.client.post(url, data)
 
         self.assertEquals(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn('data', response.data)
+        self.assertIsNotNone(response.data.get('data'))
+        response_module_data = response.data.get('data')
+
+        self.assertEquals(response_module_data.get('title'), data.get('title'))
+        self.assertEquals(response_module_data.get('description'), data.get('description'))
+        self.assertEquals(response_module_data.get('serial_number'), data.get('serial_number'))
+        self.assertEquals(response_module_data.get('course'), self.course.pk)
+
+    def test_create_module_with_existing_serial_number(self):
+        url = reverse('modules-list', args=(self.course.pk, ))
+
+        data = {
+            'title': 'existing module',
+            'description': 'existing module',
+            'serial_number': 1
+        }
+
+        response = self.client.post(url, data)
+
+        self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('error', response.data)
+        self.assertIsNotNone(response.data.get('error'))
+
+    def test_create_module_with_nonexistent_course(self):
+        url = reverse('modules-list', args=(999,))
+
+        data = {
+            'title': 'third module',
+            'description': 'third module',
+            'serial_number': 3
+        }
+
+        response = self.client.post(url, data)
+
+        self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('error', response.data)
+        self.assertIsNotNone(response.data.get('error'))
+
