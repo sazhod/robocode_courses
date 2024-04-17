@@ -101,6 +101,7 @@ class ModuleViewSet(viewsets.ModelViewSet):
         method POST
         Отвечает за добавление нового модуля в курс методистом.
         """
+        # TODO: AttributeError: This QueryDict instance is immutable
         request.data['course'] = course_pk
         serializer = CreateModuleSerializer(data=request.data)
 
@@ -111,7 +112,7 @@ class ModuleViewSet(viewsets.ModelViewSet):
                 'message': 'Модуль успешно добавлен.',
                 'data': serializer.data
             })
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         response.update({
             'error': serializer.errors

@@ -43,11 +43,15 @@ class ModuleViewSetTestCase(APITestCase):
             is_published=False
         )
         self.first_module_published = Module.objects.create(
+            title='first module',
+            description='first module',
             serial_number=1,
             course=self.course,
             is_published=True
         )
         self.second_module_unpublished = Module.objects.create(
+            title='second module',
+            description='second module',
             serial_number=2,
             course=self.course
         )
@@ -62,10 +66,10 @@ class ModuleViewSetTestCase(APITestCase):
         self.assertIn('data', response.data)
         self.assertIsNotNone(response.data.get('data'))
 
-        response_course_data = response.data.get('data')
+        response_module_data = response.data.get('data')
 
         serializer = ModuleSerializer(self.modules, many=True)
-        self.assertEquals(serializer.data, response_course_data)
+        self.assertEquals(serializer.data, response_module_data)
 
     def test_get_queryset_unauthenticated_user(self):
         self.client.logout()
@@ -85,8 +89,32 @@ class ModuleViewSetTestCase(APITestCase):
         self.assertEquals(response.status_code, status.HTTP_200_OK)
         self.assertIn('data', response.data)
         self.assertIsNotNone(response.data.get('data'))
-        response_course_data = response.data.get('data')
+        response_module_data = response.data.get('data')
 
         serializer = ModuleSerializer([self.first_module_published], many=True)
-        self.assertEquals(serializer.data, response_course_data)
+        self.assertEquals(serializer.data, response_module_data)
 
+    def test_retrieve_module(self):
+        url = reverse('modules-detail', args=(self.course.pk, self.first_module_published.pk))
+        response = self.client.get(url)
+
+        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertIn('data', response.data)
+        self.assertIsNotNone(response.data.get('data'))
+
+        serializer = ModuleSerializer(self.first_module_published)
+        response_module_data = response.data.get('data')
+        self.assertEquals(serializer.data, response_module_data)
+
+    def test_create_module_with_correct_serial_number(self):
+        url = reverse('modules-list', args=(self.course.pk, ))
+
+        data = {
+            'title': 'second module',
+            'description': 'second module',
+            'serial_number': 3
+        }
+
+        response = self.client.post(url, data)
+
+        self.assertEquals(response.status_code, status.HTTP_201_CREATED)
