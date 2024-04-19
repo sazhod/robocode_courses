@@ -97,7 +97,7 @@ class ModuleViewSetTestCase(APITestCase):
         self.assertEquals(serializer.data, response_module_data)
 
     def test_retrieve_module(self):
-        url = reverse('modules-detail', args=(self.course.pk, self.first_module_published.pk))
+        url = reverse('modules-detail', args=(self.course.pk, self.first_module_published.serial_number))
         response = self.client.get(url)
 
         self.assertEquals(response.status_code, status.HTTP_200_OK)
@@ -159,3 +159,47 @@ class ModuleViewSetTestCase(APITestCase):
         self.assertIn('error', response.data)
         self.assertIsNotNone(response.data.get('error'))
 
+    def test_update_module(self):
+        url = reverse('modules-detail', args=(self.course.pk, self.second_module_unpublished.serial_number))
+        data = {
+            'title': 'Test title',
+            'description': 'Test description',
+            'serial_number': 3,
+            'is_published': True
+        }
+        response = self.client.put(url, data)
+        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertIn('data', response.data)
+        self.assertIsNotNone(response.data.get('data'))
+        response_module_data = response.data.get('data')
+
+        updated_module = Module.objects.get(course__pk=self.course.pk, pk=self.second_module_unpublished.pk)
+        serializer = CreateModuleSerializer(updated_module)
+        print(serializer.data, response_module_data)
+        self.assertEquals(serializer.data, response_module_data)
+
+    def test_partial_update_module(self):
+        url = reverse('modules-detail', args=(self.course.pk, self.second_module_unpublished.serial_number))
+        data = {
+            'title': 'Test title(partial_update)'
+        }
+        response = self.client.patch(url, data)
+        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertIn('data', response.data)
+        self.assertIsNotNone(response.data.get('data'))
+        response_module_data = response.data.get('data')
+
+        updated_module = Module.objects.get(course__pk=self.course.pk, pk=self.second_module_unpublished.pk)
+        serializer = CreateModuleSerializer(updated_module)
+        self.assertEquals(serializer.data, response_module_data)
+
+    def test_destroy_module(self):
+        url = reverse('modules-detail', args=(self.course.pk, self.second_module_unpublished.serial_number))
+        response = self.client.delete(url)
+
+        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertIn('error', response.data)
+        self.assertIsNone(response.data.get('error'))
+
+        self.assertIn('message', response.data)
+        self.assertIsNotNone(response.data.get('message'))

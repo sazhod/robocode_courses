@@ -167,7 +167,7 @@ class ModuleViewSet(viewsets.ModelViewSet):
                 'message': 'Модуль успешно обновлен.',
                 'data': serializer.data
             })
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(response, status=status.HTTP_200_OK)
 
         response.update({
             'error': serializer.errors
