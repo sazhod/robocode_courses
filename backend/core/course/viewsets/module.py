@@ -34,6 +34,31 @@ class ModuleViewSet(viewsets.ModelViewSet):
             permission_classes.append(IsMethodist)
         return [permission() for permission in permission_classes]
 
+    def get_filter_params(self, request, course_pk: int = None, serial_number: int = None) -> dict:
+        filter_params = dict()
+
+        if course_pk is not None:
+            filter_params['course__pk'] = course_pk
+        if serial_number is not None:
+            filter_params['serial_number'] = serial_number
+        if not is_moderator_or_methodist(request=request, view=self):
+            filter_params['is_published'] = True
+
+        return filter_params
+
+    def get_object_or_400(self, request, course_pk, serial_number) -> Module | Response:
+        response: dict = get_default_response()
+
+        try:
+            filter_params = self.get_filter_params(request, course_pk, serial_number)
+            instance = Module.objects.get(**filter_params)
+            return instance
+        except Module.DoesNotExist:
+            response.update({
+                'error': f'Модуль под номером {serial_number} в курсе {course_pk} не найден.',
+            })
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
     def list(self, request, course_pk: int):
         """
         Endpoint courses/{id}/modules/
@@ -42,12 +67,8 @@ class ModuleViewSet(viewsets.ModelViewSet):
         """
         response: dict = get_default_response()
         request.data['course'] = course_pk
-        filter_params = {
-            'course__pk': course_pk
-        }
-        if not is_moderator_or_methodist(request=request, view=self):
-            filter_params['is_published'] = True
 
+        filter_params = self.get_filter_params(request, course_pk)
         modules = Module.objects.filter(**filter_params)
 
         if not modules:
@@ -72,24 +93,12 @@ class ModuleViewSet(viewsets.ModelViewSet):
         method GET
         Отвечает за получение информации о модуле в выбранном курсе.
         """
-        response: dict = get_default_response()
-
-        try:
-            filter_params = {
-                'course__pk': course_pk,
-                'serial_number': serial_number,
-            }
-            if not is_moderator_or_methodist(request=request, view=self):
-                filter_params['is_published'] = True
-            instance = Module.objects.get(**filter_params)
-        except Module.DoesNotExist:
-            response.update({
-                'error': f'Модуль под номером {serial_number} в курсе {course_pk} не найден.',
-            })
-            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        if (instance := self.get_object_or_400(request, course_pk, serial_number)) and isinstance(instance, Response):
+            return instance
 
         serializer = ModuleSerializer(instance=instance)
 
+        response: dict = get_default_response()
         response.update({
             'message': f'Информация о выбранном модуле курса {course_pk}',
             'data': serializer.data
@@ -149,15 +158,11 @@ class ModuleViewSet(viewsets.ModelViewSet):
         method PATCH
         Отвечает за частичное обновление информации о модуле в выбранном курсе методистом.
         """
-        response: dict = get_default_response()
 
-        try:
-            instance = Module.objects.get(course__pk=course_pk, serial_number=serial_number)
-        except Module.DoesNotExist:
-            response.update({
-                'error': f'Модуль под номером {serial_number} в курсе {course_pk} не найден.',
-            })
-            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        if (instance := self.get_object_or_400(request, course_pk, serial_number)) and isinstance(instance, Response):
+            return instance
+
+        response: dict = get_default_response()
 
         serializer = CreateModuleSerializer(instance=instance, data=request.data, partial=True)
 
@@ -180,18 +185,13 @@ class ModuleViewSet(viewsets.ModelViewSet):
         method DELETE
         Отвечает за удаление модуля в выбранном курсе методистом.
         """
-        response: dict = get_default_response()
 
-        try:
-            instance = Module.objects.get(course__pk=course_pk, serial_number=serial_number)
-        except Module.DoesNotExist:
-            response.update({
-                'error': f'Модуль под номером {serial_number} в курсе {course_pk} не найден.',
-            })
-            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        if (instance := self.get_object_or_400(request, course_pk, serial_number)) and isinstance(instance, Response):
+            return instance
 
         self.perform_destroy(instance)
 
+        response: dict = get_default_response()
         response.update({
             'message': f'Модуль под номером {serial_number} в курсе {course_pk} был успешно удален.'
         })
