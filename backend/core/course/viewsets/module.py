@@ -13,7 +13,6 @@ from common.constants import get_default_response
 from django.db.utils import IntegrityError
 
 
-
 User = get_user_model()
 
 
@@ -35,6 +34,10 @@ class ModuleViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
 
     def get_filter_params(self, request, course_pk: int = None, serial_number: int = None) -> dict:
+        """
+        Метод формирующий dict параметров для выборки модулей.
+        Если запрос отправляет методист или модератор, в выборку будут включены ещё не опубликованные модули.
+        """
         filter_params = dict()
 
         if course_pk is not None:
@@ -47,6 +50,10 @@ class ModuleViewSet(viewsets.ModelViewSet):
         return filter_params
 
     def get_object_or_400(self, request, course_pk, serial_number) -> Module | Response:
+        """
+        Метод получения модуля по id курса и номеру модуля.
+        Если модуль не найден возвращается Response().
+        """
         response: dict = get_default_response()
 
         try:
