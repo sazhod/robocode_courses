@@ -108,6 +108,14 @@ class ModuleViewSetTestCase(APITestCase):
         response_module_data = response.data.get('data')
         self.assertEquals(serializer.data, response_module_data)
 
+    def test_retrieve_module_with_nonexistent_course(self):
+        url = reverse('modules-detail', args=(999, self.first_module_published.serial_number))
+        response = self.client.get(url)
+
+        self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('error', response.data)
+        self.assertIsNotNone(response.data.get('error'))
+
     def test_create_module_with_correct_serial_number(self):
         url = reverse('modules-list', args=(self.course.pk, ))
 
@@ -175,7 +183,6 @@ class ModuleViewSetTestCase(APITestCase):
 
         updated_module = Module.objects.get(course__pk=self.course.pk, pk=self.second_module_unpublished.pk)
         serializer = CreateModuleSerializer(updated_module)
-        print(serializer.data, response_module_data)
         self.assertEquals(serializer.data, response_module_data)
 
     def test_partial_update_module(self):
